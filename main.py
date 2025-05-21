@@ -88,7 +88,7 @@ class ProductCard(QFrame):
             print(f"Image not found: {self.image_filename}")
             image_label.setText("No Image")
 
-        label = QLabel(f"{product.name}\n${product.price:.2f}")
+        label = QLabel(f"{product.name}\n₱{product.price:.2f}")
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         layout.addWidget(image_label)
@@ -111,7 +111,7 @@ class POSApp(QWidget):
         self.setGeometry(100, 100, 900, 600)
         self.category_combo = QComboBox()
         self.cart_list = QListWidget()
-        self.total_label = QLabel("Total: $0.00")
+        self.total_label = QLabel("Total: ₱0.00")
         self.quantity_input = QLineEdit()
         self.qty_update_input = QLineEdit()
         self.inventory = self.create_sample_inventory()
@@ -126,36 +126,36 @@ class POSApp(QWidget):
 
     def create_sample_inventory(self):
         return [
-            Product("Coca-Cola", 1.50, "Drinks"),
-            Product("Pepsi", 1.40, "Drinks"),
-            Product("Sprite", 1.30, "Drinks"),
-            Product("Iced Tea", 1.60, "Drinks"),
-            Product("Orange Juice", 2.00, "Drinks"),
-            Product("Water Bottle", 1.00, "Drinks"),
-            Product("Toothbrush", 2.50, "Personal Care"),
-            Product("Toothpaste", 3.00, "Personal Care"),
-            Product("Shampoo", 5.00, "Personal Care"),
-            Product("Soap", 1.99, "Personal Care"),
-            Product("Deodorant", 3.50, "Personal Care"),
-            Product("Razor", 4.00, "Personal Care"),
-            Product("Eggs", 2.50, "Groceries"),
-            Product("Bread", 1.80, "Groceries"),
-            Product("Milk", 1.80, "Groceries"),
-            Product("Cheese", 3.00, "Groceries"),
-            Product("Tomato", 0.50, "Groceries"),
-            Product("Potato", 0.40, "Groceries"),
-            Product("Chips", 1.50, "Snacks & Candies"),
-            Product("Chocolate Bar", 1.25, "Snacks & Candies"),
-            Product("Gummy Bears", 1.00, "Snacks & Candies"),
-            Product("Popcorn", 2.00, "Snacks & Candies"),
-            Product("Crackers", 1.75, "Snacks & Candies"),
-            Product("Nuts", 3.00, "Snacks & Candies"),
-            Product("Facial Cleanser", 8.00, "Skincare"),
-            Product("Moisturizer", 10.00, "Skincare"),
-            Product("Sunscreen", 12.00, "Skincare"),
-            Product("Toner", 7.50, "Skincare"),
-            Product("Serum", 15.00, "Skincare"),
-            Product("Face Mask", 6.00, "Skincare"),
+            Product("Coca-Cola", 25.00, "Drinks"),
+            Product("Pepsi", 22.00, "Drinks"),
+            Product("Sprite", 25.00, "Drinks"),
+            Product("Iced Tea", 20.50, "Drinks"),
+            Product("Orange Juice", 20.50, "Drinks"),
+            Product("Water Bottle", 15.00, "Drinks"),
+            Product("Toothbrush", 30.00, "Personal Care"),
+            Product("Toothpaste", 45.00, "Personal Care"),
+            Product("Shampoo", 109.50, "Personal Care"),
+            Product("Soap", 29.00, "Personal Care"),
+            Product("Deodorant", 129.50, "Personal Care"),
+            Product("Razor", 49.00, "Personal Care"),
+            Product("Eggs", 60.00, "Groceries"),
+            Product("Bread", 68.00, "Groceries"),
+            Product("Milk", 89.00, "Groceries"),
+            Product("Cheese", 104.25, "Groceries"),
+            Product("Tomato", 45.00, "Groceries"),
+            Product("Potato", 55.00, "Groceries"),
+            Product("Chips", 64.30, "Snacks & Candies"),
+            Product("Chocolate Bar", 75.00, "Snacks & Candies"),
+            Product("Gummy Bears", 40.00, "Snacks & Candies"),
+            Product("Popcorn", 80.50, "Snacks & Candies"),
+            Product("Crackers", 15.00, "Snacks & Candies"),
+            Product("Nuts", 30.00, "Snacks & Candies"),
+            Product("Facial Cleanser", 126.50, "Skincare"),
+            Product("Moisturizer", 150.00, "Skincare"),
+            Product("Sunscreen", 189.30, "Skincare"),
+            Product("Toner", 199.50, "Skincare"),
+            Product("Serum", 210.00, "Skincare"),
+            Product("Face Mask", 174.90, "Skincare"),
         ]
 
     def init_ui(self):
@@ -298,8 +298,8 @@ class POSApp(QWidget):
         self.cart_list.clear()
         for product, qty in self.cart.items.items():
             total_price = product.price * qty
-            self.cart_list.addItem(f"{product.name} x{qty} - ${total_price:.2f}")
-        self.total_label.setText(f"Total: ${self.cart.total_price():.2f}")
+            self.cart_list.addItem(f"{product.name} x{qty} - ₱{total_price:.2f}")
+        self.total_label.setText(f"Total: ₱{self.cart.total_price():.2f}")
 
     def checkout(self):
         if not self.cart.items:
@@ -314,10 +314,10 @@ class POSApp(QWidget):
 
         for product, qty in self.cart.items.items():
             total_price = product.price * qty
-            receipt += "{:<15} x{:<4} ${:.2f}\n".format(product.name[:15], qty, total_price)
+            receipt += "{:<15} x{:<4} ₱{:.2f}\n".format(product.name[:15], qty, total_price)
 
         receipt += "-" * 30 + "\n"
-        receipt += "Grand Total:     ${:.2f}\n".format(self.cart.total_price())
+        receipt += "Grand Total:     ₱{:.2f}\n".format(self.cart.total_price())
         receipt += "=" * 30 + "\n"
         receipt += "Thank you for shopping!\nCome again soon!"
 
@@ -335,6 +335,12 @@ class POSApp(QWidget):
         dialog.exec()
 
         self.receipt_history.append(receipt)
+        try:
+            with open("receipt_history.txt", "a", encoding="utf-8") as file:
+                file.write(receipt + "\n\n" + "=" * 40 + "\n\n")
+        except Exception as e:
+            QMessageBox.critical(self, "File Error", f"Failed to save receipt:\n{e}")
+
         self.cart.clear_cart()
         self.update_cart_display()
 
