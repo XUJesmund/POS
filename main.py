@@ -1,3 +1,6 @@
+def launch_pos():
+    print('POS System is running...')
+
 import sys
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
