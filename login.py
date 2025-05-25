@@ -1,100 +1,292 @@
-from main import POSApp
-from PyQt6 import QtCore, QtGui, QtWidgets
+import re
+import logging
 import sys
+from PyQt6 import QtCore, QtGui, QtWidgets
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    filename="auth_combined.log",
+    filemode="a",
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
-class Ui_Dialog(object):
+# Import POSApp (from main.py) only when needed
+POSApp = None
+
+class Ui_LoginDialog(object):
     def setupUi(self, Dialog):
         self.dialog = Dialog
-        Dialog.setObjectName("Dialog")
-        Dialog.resize(420, 400)
-        Dialog.setStyleSheet("background-color: #2b576d;")
+        Dialog.setObjectName("LoginDialog")
+        Dialog.resize(900, 600)
+        Dialog.setStyleSheet("background-color: white;")
 
-        self.loginPanel = QtWidgets.QGroupBox(parent=Dialog)
-        self.loginPanel.setGeometry(QtCore.QRect(80, 90, 251, 250))
-        self.loginPanel.setStyleSheet("background-color: rgb(96, 150, 186);")
-        self.loginPanel.setTitle("")
-        self.loginPanel.setObjectName("loginPanel")
+        # Main layout
+        main_layout = QtWidgets.QHBoxLayout()
+        main_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        self.verticalLayoutWidget_2 = QtWidgets.QWidget(parent=self.loginPanel)
-        self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(20, 20, 211, 55))
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        # Panel container
+        self.panel = QtWidgets.QWidget()
+        self.panel.setStyleSheet("""
+            background-color: #007350;
+            border-radius: 15px;
+            padding: 10px;
+        """)
+        self.panel.setObjectName("panel")
+        self.panel.setFixedSize(560, 480)
 
-        self.userName = QtWidgets.QLabel(parent=self.verticalLayoutWidget_2)
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        font.setBold(True)
-        self.userName.setFont(font)
-        self.userName.setStyleSheet("color: white;")
-        self.userName.setText("Username:")
-        self.verticalLayout_2.addWidget(self.userName)
+        panel_layout = QtWidgets.QVBoxLayout(self.panel)
+        panel_layout.setContentsMargins(10, 10, 10, 10)
+        panel_layout.setSpacing(10)
 
-        self.txt_username = QtWidgets.QLineEdit(parent=self.verticalLayoutWidget_2)
-        self.txt_username.setStyleSheet("background-color: white; color: black;")
-        self.verticalLayout_2.addWidget(self.txt_username)
+        # Logo Section
+        self.logo_label = QtWidgets.QLabel()
+        self.logo_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.logo_label.setFixedHeight(80)
 
-        self.verticalLayoutWidget_3 = QtWidgets.QWidget(parent=self.loginPanel)
-        self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(20, 80, 211, 55))
-        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_3)
-        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
+        # Placeholder for logo image
+        try:
+            self.logo_pixmap = QtGui.QPixmap("711_logo.png")  # Replace with your logo path
+            if not self.logo_pixmap.isNull():
+                self.logo_label.setPixmap(self.logo_pixmap.scaled(
+                    self.logo_label.size(),
+                    QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+                    QtCore.Qt.TransformationMode.SmoothTransformation
+                ))
+        except Exception as e:
+            self.logo_label.setText("7/11 Logo Here")
+            self.logo_label.setStyleSheet("color: white; font-size: 16pt; font-weight: bold;")
+            self.logo_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
-        self.passWord = QtWidgets.QLabel(parent=self.verticalLayoutWidget_3)
-        font.setPointSize(12)
-        font.setBold(True)
-        self.passWord.setFont(font)
-        self.passWord.setStyleSheet("color: white;")
-        self.passWord.setText("Password:")
-        self.verticalLayout_3.addWidget(self.passWord)
+        panel_layout.addWidget(self.logo_label)
 
-        self.txt_password = QtWidgets.QLineEdit(parent=self.verticalLayoutWidget_3)
-        self.txt_password.setStyleSheet("background-color: white; color: black;")
-        self.txt_password.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
-        self.verticalLayout_3.addWidget(self.txt_password)
+        # Stack Widget for switching views
+        self.stackedWidget = QtWidgets.QStackedWidget()
+        self.stackedWidget.setFixedWidth(300)
+        self.stackedWidget.setFixedHeight(320)
 
-        self.loginBtn = QtWidgets.QPushButton(parent=self.loginPanel)
-        self.loginBtn.setGeometry(QtCore.QRect(80, 150, 93, 28))
-        font.setPointSize(10)
-        self.loginBtn.setFont(font)
-        self.loginBtn.setStyleSheet("background-color: rgb(39, 76, 119); color: white;")
-        self.loginBtn.setText("Login")
-        self.loginBtn.clicked.connect(self.login)
+        # === Login Page ===
+        self.loginPage = QtWidgets.QWidget()
+        self.setupLoginPage()
+        self.stackedWidget.addWidget(self.loginPage)
 
-        self.lbl_status = QtWidgets.QLabel(parent=self.loginPanel)
-        self.lbl_status.setGeometry(QtCore.QRect(30, 190, 191, 30))
-        self.lbl_status.setFont(QtGui.QFont("Arial", 9))
-        self.lbl_status.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.lbl_status.setStyleSheet("color: white;")
-        self.lbl_status.setText("")
+        # === Register Page ===
+        self.registerPage = QtWidgets.QWidget()
+        self.setupRegisterPage()
+        self.stackedWidget.addWidget(self.registerPage)
 
+        panel_layout.addWidget(self.stackedWidget)
+
+        # Switch Button
+        self.btn_switch = QtWidgets.QPushButton("Need an account? Register")
+        self.btn_switch.setStyleSheet("""
+            color: red;
+            background-color: white;
+            padding: 6px;
+            font-size: 9pt;
+            border: 2px solid red;
+            border-radius: 5px;
+        """)
+        self.btn_switch.clicked.connect(self.toggleView)
+        panel_layout.addWidget(self.btn_switch, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+
+        # Add panel to main layout
+        main_layout.addWidget(self.panel, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+        Dialog.setLayout(main_layout)
+
+        self.stackedWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
+    def setupLoginPage(self):
+        layout = QtWidgets.QVBoxLayout()
+
+        # Username
+        self.lbl_username_login = QtWidgets.QLabel("Username:")
+        self.lbl_username_login.setStyleSheet("color: white; font-weight: bold;")
+        self.txt_username_login = QtWidgets.QLineEdit()
+        self.txt_username_login.setStyleSheet("background-color: white; color: black; padding: 5px;")
+        layout.addWidget(self.lbl_username_login)
+        layout.addWidget(self.txt_username_login)
+
+        # Password
+        self.lbl_password_login = QtWidgets.QLabel("Password:")
+        self.lbl_password_login.setStyleSheet("color: white; font-weight: bold;")
+        self.txt_password_login = QtWidgets.QLineEdit()
+        self.txt_password_login.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.txt_password_login.setStyleSheet("background-color: white; color: black; padding: 5px;")
+        layout.addWidget(self.lbl_password_login)
+        layout.addWidget(self.txt_password_login)
+
+        # Login Button
+        self.btn_login = QtWidgets.QPushButton("Login")
+        self.btn_login.setStyleSheet("""
+            background-color: white;
+            color: #007350;
+            padding: 6px;
+            font-weight: bold;
+            border: 2px solid #007350;
+            border-radius: 5px;
+        """)
+        self.btn_login.clicked.connect(self.login)
+        layout.addWidget(self.btn_login)
+
+        # Status Label
+        self.lbl_status_login = QtWidgets.QLabel("")
+        self.lbl_status_login.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.lbl_status_login.setStyleSheet("color: white;")
+        layout.addWidget(self.lbl_status_login)
+
+        self.loginPage.setLayout(layout)
+
+    def setupRegisterPage(self):
+        layout = QtWidgets.QVBoxLayout()
+
+        # Username
+        self.lbl_username_register = QtWidgets.QLabel("Username:")
+        self.lbl_username_register.setStyleSheet("color: white; font-weight: bold;")
+        self.txt_username_register = QtWidgets.QLineEdit()
+        self.txt_username_register.setStyleSheet("background-color: white; color: black; padding: 5px;")
+        layout.addWidget(self.lbl_username_register)
+        layout.addWidget(self.txt_username_register)
+
+        # Password
+        self.lbl_password_register = QtWidgets.QLabel("Password:")
+        self.lbl_password_register.setStyleSheet("color: white; font-weight: bold;")
+        self.txt_password_register = QtWidgets.QLineEdit()
+        self.txt_password_register.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.txt_password_register.setStyleSheet("background-color: white; color: black; padding: 5px;")
+        layout.addWidget(self.lbl_password_register)
+        layout.addWidget(self.txt_password_register)
+
+        # Confirm Password
+        self.lbl_confirm_register = QtWidgets.QLabel("Confirm Password:")
+        self.lbl_confirm_register.setStyleSheet("color: white; font-weight: bold;")
+        self.txt_confirm_register = QtWidgets.QLineEdit()
+        self.txt_confirm_register.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.txt_confirm_register.setStyleSheet("background-color: white; color: black; padding: 5px;")
+        layout.addWidget(self.lbl_confirm_register)
+        layout.addWidget(self.txt_confirm_register)
+
+        # Register Button
+        self.btn_register = QtWidgets.QPushButton("Register")
+        self.btn_register.setStyleSheet("""
+            background-color: white;
+            color: #007350;
+            padding: 6px;
+            font-weight: bold;
+            border: 2px solid #007350;
+            border-radius: 5px;
+        """)
+        self.btn_register.clicked.connect(self.register)
+        layout.addWidget(self.btn_register)
+
+        # Status Label
+        self.lbl_status_register = QtWidgets.QLabel("")
+        self.lbl_status_register.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.lbl_status_register.setStyleSheet("color: white;")
+        layout.addWidget(self.lbl_status_register)
+
+        self.registerPage.setLayout(layout)
+
+    def toggleView(self):
+        current_index = self.stackedWidget.currentIndex()
+        self.stackedWidget.setCurrentIndex(1 if current_index == 0 else 0)
+        self.btn_switch.setText("Back to Login" if current_index == 0 else "Need an account? Register")
+
+    def is_strong_password(self, password):
+        if len(password) < 8:
+            return False
+        if not re.search(r"[A-Z]", password):  # At least one uppercase
+            return False
+        if not re.search(r"[a-z]", password):  # At least one lowercase
+            return False
+        if not re.search(r"[0-9]", password):  # At least one digit
+            return False
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):  # Special character
+            return False
+        return True
+
     def login(self):
-        username = self.txt_username.text()
-        password = self.txt_password.text()
+        username = self.txt_username_login.text().strip()
+        password = self.txt_password_login.text().strip()
 
-        if username == "admin" and password == "admin123":
-            self.lbl_status.setStyleSheet("color: lightgreen;")
-            self.lbl_status.setText("Login successful!")
+        valid_user = "admin"
+        valid_password = "Admin123!"  # Must meet strong password criteria
 
+        if not username or not password:
+            self.lbl_status_login.setStyleSheet("color: yellow;")
+            self.lbl_status_login.setText("Both fields are required.")
+            logging.warning("Empty login attempt.")
+            return
+
+        if username == valid_user and password == valid_password:
+            self.lbl_status_login.setStyleSheet("color: lightgreen;")
+            self.lbl_status_login.setText("Login successful!")
             QtCore.QTimer.singleShot(500, self.open_pos_window)
         else:
-            self.lbl_status.setStyleSheet("color: red;")
-            self.lbl_status.setText("Invalid username or password.")
+            self.lbl_status_login.setStyleSheet("color: yellow;")
+            self.lbl_status_login.setText("Invalid credentials.")
+            logging.warning(f"Failed login attempt: {username}")
+
+    def register(self):
+        username = self.txt_username_register.text().strip()
+        password = self.txt_password_register.text().strip()
+        confirm = self.txt_confirm_register.text().strip()
+
+        if not username or not password or not confirm:
+            self.lbl_status_register.setStyleSheet("color: yellow;")
+            self.lbl_status_register.setText("All fields are required.")
+            logging.warning("Empty registration attempt.")
+            return
+
+        if password != confirm:
+            self.lbl_status_register.setStyleSheet("color: yellow;")
+            self.lbl_status_register.setText("Passwords do not match.")
+            logging.warning(f"Password mismatch during registration for {username}")
+            return
+
+        if not self.is_strong_password(password):
+            self.lbl_status_register.setStyleSheet("color: orange;")
+            self.lbl_status_register.setText("Password does not meet complexity requirements.")
+            logging.warning(f"Weak password used by {username}.")
+            return
+
+        existing_users = ["admin"]
+        if username in existing_users:
+            self.lbl_status_register.setStyleSheet("color: yellow;")
+            self.lbl_status_register.setText("Username already exists.")
+            logging.warning(f"Duplicate username attempted: {username}")
+            return
+
+        self.lbl_status_register.setStyleSheet("color: lightgreen;")
+        self.lbl_status_register.setText("Registration successful!")
+        logging.info(f"User registered successfully: {username}")
+
+        QtCore.QTimer.singleShot(1500, lambda: self.stackedWidget.setCurrentIndex(0))
 
     def open_pos_window(self):
         self.dialog.close()
+        global POSApp
+        if POSApp is None:
+            try:
+                from main import POSApp
+            except ImportError as e:
+                self.lbl_status_login.setStyleSheet("color: yellow;")
+                self.lbl_status_login.setText("Error loading POS.")
+                logging.error(f"Error importing POSApp: {str(e)}")
+                return
+
         self.pos_window = POSApp()
         self.pos_window.show()
 
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    Dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
-    Dialog.setWindowTitle("Login")
-    Dialog.show()
+    dialog = QtWidgets.QDialog()
+    ui = Ui_LoginDialog()
+    ui.setupUi(dialog)
+    dialog.setWindowTitle("7/11 Login")
+    dialog.show()
     sys.exit(app.exec())
 
 
