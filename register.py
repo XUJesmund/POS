@@ -64,7 +64,7 @@ class Ui_LoginDialog(object):
 
         # === Right Panel: Password Requirements Guide ===
         self.right_panel = QtWidgets.QWidget()
-        self.right_panel.setFixedWidth(320)
+        self.right_panel.setFixedSize(340, 500)
         self.right_panel.setStyleSheet("background-color: #3a6d8c; border-radius: 10px;")
         right_layout = QtWidgets.QVBoxLayout(self.right_panel)
         right_layout.setContentsMargins(20, 40, 20, 20)
@@ -78,11 +78,11 @@ class Ui_LoginDialog(object):
 
         # Requirement Labels
         self.requirements = {
-            "length": QtWidgets.QLabel("❌ At least 8 characters"),
-            "uppercase": QtWidgets.QLabel("❌ At least one uppercase letter"),
-            "lowercase": QtWidgets.QLabel("❌ At least one lowercase letter"),
-            "digit": QtWidgets.QLabel("❌ At least one number"),
-            "special": QtWidgets.QLabel("❌ At least one special character")
+            "length": QtWidgets.QLabel(" At least 8 characters"),
+            "uppercase": QtWidgets.QLabel(" At least one uppercase letter"),
+            "lowercase": QtWidgets.QLabel(" At least one lowercase letter"),
+            "digit": QtWidgets.QLabel(" At least one number"),
+            "special": QtWidgets.QLabel(" At least one special character")
         }
 
         for label in self.requirements.values():
