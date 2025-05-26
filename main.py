@@ -74,7 +74,7 @@ class ProductCard(QFrame):
         self.setStyleSheet("""
             QFrame {
                 background-color: white;
-                border: 2px solid #C90000;
+                border: 2px solid #007359;
                 border-radius: 10px;
                 padding: 5px;
             }
@@ -84,7 +84,7 @@ class ProductCard(QFrame):
 
         image_label = QLabel()
         image_label.setFixedSize(80, 80)
-        image_label.setStyleSheet("border-radius: 10px; border: 1px solid #C90000;")
+        image_label.setStyleSheet("border-radius: 10px; border: 1px solid #007359;")
         image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.image_filename = f"images/{self.product.name.lower().replace(' ', '_')}.png"
         pixmap = QPixmap(self.image_filename)
@@ -119,7 +119,7 @@ class POSApp(QWidget):
         self.setGeometry(100, 100, 900, 600)
         self.setStyleSheet("""
             QWidget {
-                background-color: white;
+                background-color: #007350;
                 color: black;
                 font-family: Arial, sans-serif;
             }
@@ -129,15 +129,15 @@ class POSApp(QWidget):
             }
             QGroupBox {
                 font-weight: bold;
-                border: 2px solid #C90000;
+                border: 2px solid #007359;
                 margin-top: 10px;
-                color: #C90000;
+                color: #007359;
             }
             QGroupBox::title {
                 subline-control-position: top center;
                 padding: 5px;
                 color: #C90000;
-                background-color: white;
+                background-color: #007359;
             }
         """)
 
@@ -200,14 +200,14 @@ class POSApp(QWidget):
         view_history_btn = QPushButton("📜 View Receipt History")
         view_history_btn.setStyleSheet("""
             QPushButton {
-                background-color: #C90000;
+                background-color: #007359;
                 color: white;
                 border-radius: 5px;
                 padding: 5px;
                 font-weight: bold;
             }
             QPushButton:hover {
-                background-color: #a60000;
+                background-color: #002419;
             }
         """)
         view_history_btn.clicked.connect(self.open_receipt_history_window)
@@ -228,8 +228,8 @@ class POSApp(QWidget):
         self.category_combo.setStyleSheet("""
             QComboBox {
                 background-color: white;
-                color: #C90000;
-                border: 1px solid #C90000;
+                color: black;
+                border: 1px solid #014f37;
                 border-radius: 5px;
                 padding: 5px;
                 font-size: 14px;
@@ -255,7 +255,7 @@ class POSApp(QWidget):
         self.quantity_input.setStyleSheet("""
             QLineEdit {
                 padding: 5px;
-                border: 1px solid #C90000;
+                border: 1px solid #002419;
                 border-radius: 5px;
                 font-size: 14px;
             }
@@ -264,14 +264,14 @@ class POSApp(QWidget):
         add_button = QPushButton("Add to Cart")
         add_button.setStyleSheet("""
             QPushButton {
-                background-color: #C90000;
+                background-color: #014f37;
                 color: white;
                 border-radius: 5px;
                 padding: 8px;
                 font-weight: bold;
             }
             QPushButton:hover {
-                background-color: #a60000;
+                background-color: #002419;
             }
         """)
         add_button.clicked.connect(self.add_to_cart_with_quantity)
@@ -280,8 +280,8 @@ class POSApp(QWidget):
         left_panel.addWidget(self.quantity_input)
         left_panel.addWidget(add_button)
 
-        cart_group = QGroupBox("Shopping Cart")
-        cart_group.setStyleSheet("background-color: #C90000; border: 2px solid white; border-radius: 8px;")
+        cart_group = QGroupBox()  # Removed title "Shopping Cart"
+        cart_group.setStyleSheet("background-color: #014f37; border: 2px solid #007359; border-radius: 8px;")
         cart_layout = QVBoxLayout()
 
         self.cart_list.itemDoubleClicked.connect(self.remove_from_cart)
@@ -289,38 +289,44 @@ class POSApp(QWidget):
             QListWidget {
                 background-color: white;
                 color: black;
-                border: 1px solid #C90000;
+                border: 1px solid #002419;
                 border-radius: 5px;
                 padding: 5px;
             }
         """)
 
-        cart_layout.addWidget(QLabel("Items:"))
+        # Changed label text color to white
+        self.items_label = QLabel("Shopping Cart:")
+        self.items_label.setStyleSheet("color: white; font-weight: bold;")
+        cart_layout.addWidget(self.items_label)
         cart_layout.addWidget(self.cart_list)
 
         self.qty_update_input.setStyleSheet("""
             QLineEdit {
                 padding: 5px;
-                border: 1px solid #C90000;
+                border: 1px solid #014f37;
                 border-radius: 5px;
                 font-size: 14px;
             }
         """)
 
-        cart_layout.addWidget(QLabel("Edit Quantity:"))
+        # Changed label text color to white
+        self.edit_qty_label = QLabel("Edit Quantity:")
+        self.edit_qty_label.setStyleSheet("color: white; font-weight: bold;")
+        cart_layout.addWidget(self.edit_qty_label)
         cart_layout.addWidget(self.qty_update_input)
 
         btn_layout = QHBoxLayout()
         delete_btn = QPushButton("Delete Item")
         delete_btn.setStyleSheet("""
             QPushButton {
-                background-color: #C90000;
+                background-color: #014f37;
                 color: white;
                 border-radius: 5px;
                 padding: 5px;
             }
             QPushButton:hover {
-                background-color: #a60000;
+                background-color: ##002419;
             }
         """)
         delete_btn.clicked.connect(self.delete_selected_item)
@@ -328,13 +334,13 @@ class POSApp(QWidget):
         update_btn = QPushButton("Update Quantity")
         update_btn.setStyleSheet("""
             QPushButton {
-                background-color: #C90000;
+                background-color: #014f37;
                 color: white;
                 border-radius: 5px;
                 padding: 5px;
             }
             QPushButton:hover {
-                background-color: #a60000;
+                background-color: #002419;
             }
         """)
         update_btn.clicked.connect(self.update_selected_item_quantity)
@@ -349,14 +355,14 @@ class POSApp(QWidget):
         checkout_btn.setStyleSheet("""
             QPushButton {
                 background-color: white;
-                color: #C90000;
-                border: 2px solid #C90000;
+                color: #014f37;
+                border: 2px solid #014f37;
                 border-radius: 5px;
                 padding: 8px;
                 font-weight: bold;
             }
             QPushButton:hover {
-                background-color: #ffe6e6;
+                background-color: #002419;
             }
         """)
         checkout_btn.clicked.connect(self.checkout)
